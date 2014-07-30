@@ -1,0 +1,7 @@
+This is an initial release of sbt-javaversioncheck.
+It's an auto plugin to enforce Java version in case your library needs support Java 6. If you forget to switch JDK, `publish` and `publishLocal` task will fail.
+
+    lazy val fooProj = (project in file("foo")).
+      settings(
+        javaVersionPrefix in javaVersionCheck := Some("1.6")
+      )
