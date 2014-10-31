@@ -64,7 +64,7 @@ object JavaVersionCheck {
     javaVersionPrefix match {
       case Some(prefix) =>
         if (!version.startsWith(prefix)) {
-          sys.error(s"javac version ${version} may not be used to publish, it has to start with ${prefix} due to javacVersionPrefix setting")
+          sys.error(s"javac version ${version} may not be used to publish, it has to start with ${prefix} due to javaVersionPrefix setting")
         }
       case None =>
     }
