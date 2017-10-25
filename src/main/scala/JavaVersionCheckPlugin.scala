@@ -1,9 +1,9 @@
 package com.typesafe.sbt
 
+import sbt.Keys._
 import sbt._
-import Keys._
-import compiler.JavaTool
-import plugins.JvmPlugin
+import sbt.plugins.JvmPlugin
+import xsbti.compile.{IncToolOptions, JavaTool}
 
 object JavaVersionCheckPlugin extends sbt.AutoPlugin {
   val defaultJavaVersionPrefix: Option[String] = Some("1.7")
@@ -22,21 +22,21 @@ object JavaVersionCheckPlugin extends sbt.AutoPlugin {
     javaVersionPrefix in javaVersionCheck := defaultJavaVersionPrefix,
     javaVersionCheck := {
       val log = streams.value.log
-      val javac = (compileInputs in (Compile, compile)).value.compilers.javac
+      val javac = (compileInputs in (Compile, compile)).value.compilers.javaTools().javac()
       JavaVersionCheck((javaVersionPrefix in javaVersionCheck ).value, javac, log)
     },
-    // we hook onto deliverConfiguration to run the version check as early as possible,
+    // we hook onto publishConfiguration to run the version check as early as possible,
     // before we actually do anything. But we don't want to require the version check
     // just for compile.
-    deliverConfiguration := {
+    publishConfiguration := {
       val log = streams.value.log
       log.info("will publish with javac version " + javaVersionCheck.value)
-      deliverConfiguration.value
+      publishConfiguration.value
     },
-    deliverLocalConfiguration := {
+    publishLocalConfiguration := {
       val log = streams.value.log
       log.info("will publish locally with javac version " + javaVersionCheck.value)
-      deliverLocalConfiguration.value
+      publishLocalConfiguration.value
     }
   )
 }
@@ -56,10 +56,12 @@ object JavaVersionCheck {
       def success(message: => String): Unit = realLog.success(message)
       def trace(t: => Throwable): Unit = realLog.trace(t)
     }
-    javac(sources = Nil,
-      classpath = Nil,
-      outputDirectory = file("."),
-      options = Seq("-version"))(captureVersionLog)
+    javac.run(
+      Array.empty,
+      Array("-version"),
+      IncToolOptions.create(java.util.Optional.empty(), true),
+      null,
+      captureVersionLog)
     val version: String = captureVersionLog.captured getOrElse {sys.error("failed to get or parse the output of javac -version")}
     javaVersionPrefix match {
       case Some(prefix) =>
