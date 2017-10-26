@@ -3,7 +3,6 @@ package com.typesafe.sbt
 import sbt.Keys._
 import sbt._
 import sbt.plugins.JvmPlugin
-import xsbti.compile.{IncToolOptions, JavaTool}
 
 object JavaVersionCheckPlugin extends sbt.AutoPlugin {
   val defaultJavaVersionPrefix: Option[String] = Some("1.7")
@@ -21,9 +20,7 @@ object JavaVersionCheckPlugin extends sbt.AutoPlugin {
   def javaVersionCheckSettings: Seq[Setting[_]] = Seq(
     javaVersionPrefix in javaVersionCheck := defaultJavaVersionPrefix,
     javaVersionCheck := {
-      val log = streams.value.log
-      val javac = (compileInputs in (Compile, compile)).value.compilers.javaTools().javac()
-      JavaVersionCheck((javaVersionPrefix in javaVersionCheck ).value, javac, log)
+      JavaVersionCheck((javaVersionPrefix in javaVersionCheck ).value)
     },
     // we hook onto publishConfiguration to run the version check as early as possible,
     // before we actually do anything. But we don't want to require the version check
@@ -42,27 +39,9 @@ object JavaVersionCheckPlugin extends sbt.AutoPlugin {
 }
 
 object JavaVersionCheck {
-  def apply(javaVersionPrefix: Option[String], javac: JavaTool, realLog: Logger): String = {
-    val captureVersionLog = new Logger() {
-      var captured: Option[String] = None
-       def log(level: Level.Value, message: => String): Unit = {
-         val m = message
-         if (level == Level.Warn && m.startsWith("javac ")) {
-           captured = Some(m.substring("javac ".length).trim)
-         } else {
-           realLog.log(level, m)
-         }
-       }
-      def success(message: => String): Unit = realLog.success(message)
-      def trace(t: => Throwable): Unit = realLog.trace(t)
-    }
-    javac.run(
-      Array.empty,
-      Array("-version"),
-      IncToolOptions.create(java.util.Optional.empty(), true),
-      null,
-      captureVersionLog)
-    val version: String = captureVersionLog.captured getOrElse {sys.error("failed to get or parse the output of javac -version")}
+  def apply(javaVersionPrefix: Option[String]): String = {
+    val version = sys.props.get("java.version") getOrElse {sys.error("failed to get system property java.version")}
+
     javaVersionPrefix match {
       case Some(prefix) =>
         if (!version.startsWith(prefix)) {
