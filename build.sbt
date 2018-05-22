@@ -21,4 +21,4 @@ publishTo := {
 
 credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
 
-crossSbtVersions := Seq("0.13.6", "1.0.2")
+crossSbtVersions := Seq("0.13.17", "1.1.5")
