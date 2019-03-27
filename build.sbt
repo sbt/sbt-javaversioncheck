@@ -1,24 +1,15 @@
-sbtPlugin := true
+ThisBuild / organization := "com.typesafe.sbt"
+ThisBuild / version := "0.1.0"
+ThisBuild / description := "sbt plugin to check Java version"
+ThisBuild / licenses := Seq("MIT License" -> url("http://opensource.org/licenses/MIT"))
 
-name := "sbt-javaversioncheck"
-
-organization := "com.typesafe.sbt"
-
-version := "0.1.0"
-
-description := "sbt plugin to check Java version"
-
-licenses := Seq("MIT License" -> url("http://opensource.org/licenses/MIT"))
-
-scalacOptions := Seq("-deprecation", "-unchecked")
-
-publishMavenStyle := false
-
-publishTo := {
-  if (isSnapshot.value) Some(Resolver.sbtPluginRepo("snapshots"))
-  else Some(Resolver.sbtPluginRepo("releases"))
-}
-
-credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
-
-crossSbtVersions := Seq("0.13.17", "1.1.6")
+lazy val root = (project in file("."))
+  .settings(
+    sbtPlugin := true,
+    name := "sbt-javaversioncheck",
+    scalacOptions := Seq("-deprecation", "-unchecked"),
+    publishMavenStyle := false,
+    crossSbtVersions := Seq("0.13.17", "1.1.6"),
+    bintrayOrganization := Some("sbt"),
+    bintrayRepository := "sbt-plugin-releases",
+  )
