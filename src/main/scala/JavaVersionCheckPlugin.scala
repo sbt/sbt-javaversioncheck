@@ -8,7 +8,7 @@ object JavaVersionCheckPlugin extends sbt.AutoPlugin {
   val defaultJavaVersionPrefix: Option[String] = Some("1.7")
 
   object autoImport {
-    lazy val javaVersionPrefix = settingKey[Option[String]]("java version prefix required by javaVersionCheck")
+    lazy val javaVersionPrefix = settingKey[Option[String]]("Java version prefix required by javaVersionCheck")
     lazy val javaVersionCheck = taskKey[String]("checks the Java version vs. javaVersionPrefix, returns actual version")
   }
 
@@ -45,7 +45,7 @@ object JavaVersionCheck {
     javaVersionPrefix match {
       case Some(prefix) =>
         if (!version.startsWith(prefix)) {
-          sys.error(s"javac version ${version} may not be used to publish, it has to start with ${prefix} due to javaVersionPrefix setting")
+          sys.error(s"JVM version ${version} does not start with ${prefix} required by javaVersionPrefix setting.")
         }
       case None =>
     }
